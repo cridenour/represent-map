@@ -12,9 +12,9 @@ if(isset($_GET['place_id'])) {
 
 
 // get place info
-$place_query = mysql_query("SELECT * FROM places WHERE id='$place_id' LIMIT 1");
-if(mysql_num_rows($place_query) != 1) { exit; }
-$place = mysql_fetch_assoc($place_query);
+$place_query = pg_query($conn, "SELECT * FROM places WHERE id='$place_id' LIMIT 1");
+if(pg_num_rows($place_query) != 1) { exit; }
+$place = pg_fetch_assoc($place_query);
 
 
 // do place edit if requested
@@ -28,7 +28,7 @@ if($task == "doedit") {
   $owner_email = $_POST['owner_email'];
   $type = $_POST['type'];
   
-  mysql_query("UPDATE places SET title='$title', type='$type', address='$address', uri='$uri', lat='', lng='', description='$description', owner_name='$owner_name', owner_email='$owner_email' WHERE id='$place_id' LIMIT 1") or die(mysql_error());
+  pg_query($conn, "UPDATE places SET title='$title', type='$type', address='$address', uri='$uri', lat='', lng='', description='$description', owner_name='$owner_name', owner_email='$owner_email' WHERE id='$place_id' LIMIT 1") or die(pg_error());
   
   // geocode
   $hide_geocode_output = true;

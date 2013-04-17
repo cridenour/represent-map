@@ -25,8 +25,8 @@ function getEventbriteEvents($eb_keywords, $eb_city, $eb_proximity) {
   foreach($xml->event as $event) {  
 
     // add event if it doesn't already exist
-    $event_query = mysql_query("SELECT * FROM events WHERE id_eventbrite=$event->id") or die(mysql_error());
-    if(mysql_num_rows($event_query) == 0) {
+    $event_query = pg_query($conn, "SELECT * FROM events WHERE id_eventbrite=$event->id") or die(pg_error());
+    if(pg_num_rows($event_query) == 0) {
       echo $event_id." ";
 
       // get event url
@@ -43,7 +43,7 @@ function getEventbriteEvents($eb_keywords, $eb_city, $eb_proximity) {
       $event_title = str_replace(array("\r\n", "\r", "\n"), ' ', $event->title);  
 
       // add event to database
-      mysql_query("INSERT INTO events (id_eventbrite, 
+      pg_query($conn, "INSERT INTO events (id_eventbrite, 
                                       title,
                                       created, 
                                       organizer_name, 
@@ -60,7 +60,7 @@ function getEventbriteEvents($eb_keywords, $eb_city, $eb_proximity) {
                                       '".strtotime($event->start_date)."',
                                       '".strtotime($event->end_date)."',
                                       '$event_venue_address, $event_venue_city, $event_venue_postal_code'
-                                      )") or die(mysql_error()); 
+                                      )") or die(pg_error()); 
     }
 
     $count++;

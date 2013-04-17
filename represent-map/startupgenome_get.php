@@ -9,9 +9,9 @@ include_once "header.php";
 // This script will only run if we haven't checked for new only 
 // if the frequency interval specified in db.php has already passed.
 
-$interval_query = mysql_query("SELECT sg_lastupdate FROM settings LIMIT 1");
-if(mysql_num_rows($interval_query) == 1) {
-  $interval_info = mysql_fetch_assoc($interval_query);
+$interval_query = pg_query($conn, "SELECT sg_lastupdate FROM settings LIMIT 1");
+if(pg_num_rows($interval_query) == 1) {
+  $interval_info = pg_fetch_assoc($interval_query);
   if((time()-$interval_info[sg_lastupdate]) > $sg_frequency || $_GET['override'] == "true") {
 
     // connect to startup genome API
@@ -25,7 +25,7 @@ if(mysql_num_rows($interval_query) == 1) {
     try {
       $r = $http->doGet("login/{$sg_auth_code}");
       $j = json_decode($r,1);
-      $http->setHeaders(array("AUTH_CODE: {$sg_auth_code}"));
+      $http->setHeaders(array("AUTH-CODE: {$sg_auth_code}"));
       $user = $j['response'];
     } catch(Exception $e) {
       $error = "<div class='error'>".print_r($e)."</div>";
@@ -63,11 +63,11 @@ if(mysql_num_rows($interval_query) == 1) {
         $count[$place[type]]++;
         $marker_id++;
 
-        $place_query = mysql_query("SELECT id FROM places WHERE sg_organization_id='".$place['organization_id']."' LIMIT 1") or die(mysql_error());
+        $place_query = pg_query($conn, "SELECT id FROM places WHERE sg_organization_id='".$place['organization_id']."' LIMIT 1") or die(pg_last_error());
         
         // organization doesn't exist, add it to the db
-        if(mysql_num_rows($place_query) == 0) {
-          mysql_query("INSERT INTO places (approved,
+        if(pg_num_rows($place_query) == 0) {
+          pg_query($conn, "INSERT INTO places (approved,
                                           title, 
                                           type,
                                           lat,
@@ -86,13 +86,13 @@ if(mysql_num_rows($interval_query) == 1) {
                                           '".parseInput($place['url'])."',
                                           '".parseInput($place['description'])."',
                                           '".parseInput($place['organization_id'])."'
-                                          )") or die(mysql_error());
+                                          )") or die(pg_last_error());
           
         // organization already exists, update it with new info if necessary
-        } else if(mysql_num_rows($place_query) == 1) {
-          $place_info = mysql_fetch_assoc($place_query);
+        } else if(pg_num_rows($place_query) == 1) {
+          $place_info = pg_fetch_assoc($place_query);
           if($place_info['title'] != $place['name'] || $place_info['type'] != $place['type'] || $place_info['lat'] != $place['latitude'] || $place_info['lng'] != $place['longitude'] || $place_info['address'] != $place['address'] || $place_info['uri'] != $place['url'] || $place_info['description'] != $place['description']) {
-            mysql_query("UPDATE places SET title='".parseInput($place['name'])."',
+            pg_query($conn, "UPDATE places SET title='".parseInput($place['name'])."',
                                            type='".parseInput($place['type'])."',
                                            lat='".parseInput($place['latitude'])."',
                                            lng='".parseInput($place['longitude'])."',
@@ -107,10 +107,12 @@ if(mysql_num_rows($interval_query) == 1) {
       
       // delete any old markers that have already been deleted on SG
       $org_array = implode(",", $org_array);
-      $deleted = mysql_query("DELETE FROM places WHERE sg_organization_id NOT IN ({$org_array})") or die(mysql_error());
+      if(strlen($org_array) > 0) {
+        $deleted = pg_query($conn, "DELETE FROM places WHERE sg_organization_id NOT IN ({$org_array})") or die(pg_last_error());
+      }
 
       // update settings table with the timestamp for this sync
-      mysql_query("UPDATE settings SET sg_lastupdate='".time()."'");
+      pg_query($conn, "UPDATE settings SET sg_lastupdate='".time()."'");
 
     // show errors if there were any issues
     } catch (Exception $e) {

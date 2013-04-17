@@ -20,14 +20,14 @@ function geocode($table) {
   global $hide_geocode_output;
 
   // get places that don't have latlong values
-  $result = mysql_query("SELECT * FROM $table WHERE lat=0 OR lng=0") or die(mysql_error());
+  $result = pg_query($conn, "SELECT * FROM $table WHERE lat=0 OR lng=0") or die(pg_error());
 
   // geocode and save them back to the db
   $delay = 0;
   $base_url = "http://" . MAPS_HOST . "/maps/api/geocode/xml";
 
   // Iterate through the rows, geocoding each address
-  while ($row = @mysql_fetch_assoc($result)) {
+  while ($row = @pg_fetch_assoc($result)) {
     $geocode_pending = true;
 
     while ($geocode_pending) {
@@ -48,12 +48,12 @@ function geocode($table) {
         $query = sprintf("UPDATE $table " .
               " SET lat = '%s', lng = '%s' " .
               " WHERE id = '%s' LIMIT 1;",
-              mysql_real_escape_string($lat),
-              mysql_real_escape_string($lng),
-              mysql_real_escape_string($id));
-        $update_result = mysql_query($query);
+              pg_real_escape_string($lat),
+              pg_real_escape_string($lng),
+              pg_real_escape_string($id));
+        $update_result = pg_query($query);
         if (!$update_result) {
-          die("Invalid query: " . mysql_error());
+          die("Invalid query: " . pg_error());
         }
       } else if (strcmp($status, "620") == 0) {
         // sent geocodes too fast
@@ -70,7 +70,7 @@ function geocode($table) {
 
   // finish
   if(@$hide_geocode_output != true) {
-    echo mysql_num_rows($result)." $table geocoded<br />";
+    echo pg_num_rows($result)." $table geocoded<br />";
   }
 
 }

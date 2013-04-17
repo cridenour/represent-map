@@ -132,7 +132,7 @@ include_once "header.php";
         var myOptions = {
           zoom: 11,
           //minZoom: 10,
-          center: new google.maps.LatLng(34.034453,-118.341293),
+          center: new google.maps.LatLng(39.1619444,-84.4569444),
           mapTypeId: google.maps.MapTypeId.ROADMAP,
           streetViewControl: false,
           mapTypeControl: false,
@@ -177,11 +177,11 @@ include_once "header.php";
               );
           $marker_id = 0;
           foreach($types as $type) {
-            $places = mysql_query("SELECT * FROM places WHERE approved='1' AND type='$type[0]' ORDER BY title");
-            $places_total = mysql_num_rows($places);
-            while($place = mysql_fetch_assoc($places)) {
+            $places = pg_query($conn, "SELECT * FROM places WHERE approved AND type='$type[0]' ORDER BY title");
+            $places_total = pg_num_rows($places);
+            while($place = pg_fetch_assoc($places)) {
               $place[title] = htmlspecialchars_decode(addslashes(htmlspecialchars($place[title])));
-              $place[description] = htmlspecialchars_decode(addslashes(htmlspecialchars($place[description])));
+              $place[description] = json_encode($place[description]);
               $place[uri] = addslashes(htmlspecialchars($place[uri]));
               $place[address] = htmlspecialchars_decode(addslashes(htmlspecialchars($place[address])));
               echo "
@@ -194,9 +194,9 @@ include_once "header.php";
           } 
           if($show_events == true) {
             $place[type] = "event";
-            $events = mysql_query("SELECT * FROM events WHERE start_date > ".time()." AND start_date < ".(time()+4838400)." ORDER BY id DESC");
-            $events_total = mysql_num_rows($events);
-            while($event = mysql_fetch_assoc($events)) {
+            $events = pg_query($conn, "SELECT * FROM events WHERE start_date > ".time()." AND start_date < ".(time()+4838400)." ORDER BY id DESC");
+            $events_total = pg_num_rows($events);
+            while($event = pg_fetch_assoc($events)) {
               $event[title] = htmlspecialchars_decode(addslashes(htmlspecialchars($event[title])));
               $event[description] = htmlspecialchars_decode(addslashes(htmlspecialchars($event[description])));
               $event[uri] = addslashes(htmlspecialchars($event[uri]));
@@ -378,7 +378,7 @@ include_once "header.php";
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) return;
       js = d.createElement(s); js.id = id;
-      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=421651897866629";
+      js.src = "//connect.facebook.net/en_US/all.js#xfbml=1&appId=480846075291753";
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));</script>
     
@@ -390,9 +390,9 @@ include_once "header.php";
       <div class="wrapper">
         <div class="right">
           <div class="share">
-            <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://www.represent.la" data-text="Let's put Los Angeles startups on the map:" data-via="representla" data-count="none">Tweet</a>
+            <a href="https://twitter.com/share" class="twitter-share-button" data-url="http://map.startupcincy.com" data-text="Let's put Cincinnati startups on the map:" data-via="startupcincy" data-count="none">Tweet</a>
             <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
-            <div class="fb-like" data-href="http://www.represent.la" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false" data-font="arial"></div>
+            <div class="fb-like" data-href="http://map.startupcincy.com" data-send="false" data-layout="button_count" data-width="100" data-show-faces="false" data-font="arial"></div>
           </div>
         </div>
         <div class="left">
@@ -402,7 +402,6 @@ include_once "header.php";
             </a>
           </div>
           <div class="buttons">
-            <a href="#modal_info" class="btn btn-large btn-info" data-toggle="modal"><i class="icon-info-sign icon-white"></i>About this Map</a>
             <?php if($sg_enabled) { ?>
               <a href="#modal_add_choose" class="btn btn-large btn-success" data-toggle="modal"><i class="icon-plus-sign icon-white"></i>Add Something</a>
             <? } else { ?>
@@ -435,11 +434,11 @@ include_once "header.php";
           $marker_id = 0;
           foreach($types as $type) {
             if($type[0] != "event") {
-              $markers = mysql_query("SELECT * FROM places WHERE approved='1' AND type='$type[0]' ORDER BY title");
+              $markers = pg_query($conn, "SELECT * FROM places WHERE approved AND type='$type[0]' ORDER BY title");
             } else {
-              $markers = mysql_query("SELECT * FROM events WHERE start_date > ".time()." AND start_date < ".(time()+4838400)." ORDER BY id DESC");
+              $markers = pg_query($conn, "SELECT * FROM events WHERE start_date > ".time()." AND start_date < ".(time()+4838400)." ORDER BY id DESC");
             }
-            $markers_total = mysql_num_rows($markers);
+            $markers_total = pg_num_rows($markers);
             echo "
               <li class='category'>
                 <div class='category_item'>
@@ -448,7 +447,7 @@ include_once "header.php";
                 </div>
                 <ul class='list-items list-$type[0]'>
             ";
-            while($marker = mysql_fetch_assoc($markers)) {
+            while($marker = pg_fetch_assoc($markers)) {
               echo "
                   <li class='".$marker[type]."'>
                     <a href='#' onMouseOver=\"markerListMouseOver('".$marker_id."')\" onMouseOut=\"markerListMouseOut('".$marker_id."')\" onClick=\"goToMarker('".$marker_id."');\">".$marker[title]."</a>
@@ -463,64 +462,13 @@ include_once "header.php";
           }
         ?>
         <li class="blurb">
-          This map was made to connect and promote the Los Angeles tech startup community.
-          Let's put LA on the map!
+          This map was created by the greater startup community and be forked form <a href="https://github.com/cridenour/represent-map">GitHub</a>.
         </li>
         <li class="attribution">
           <!-- per our license, you may not remove this line -->
           <?=$attribution?>
         </li>
       </ul>
-    </div>
-    
-    <!-- more info modal -->
-    <div class="modal hide" id="modal_info">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">×</button>
-        <h3>About this Map</h3>
-      </div>
-      <div class="modal-body">
-        <p>
-          We built this map to connect and promote the tech startup community
-          in our beloved Los Angeles. We've seeded the map but we need
-          your help to keep it fresh. If you don't see your company, please 
-          <?php if($sg_enabled) { ?>
-            <a href="#modal_add_choose" data-toggle="modal" data-dismiss="modal">submit it here</a>.
-          <?php } else { ?>
-            <a href="#modal_add" data-toggle="modal" data-dismiss="modal">submit it here</a>.
-          <?php } ?>
-          Let's put LA on the map together!
-        </p>
-        <p>
-          Questions? Feedback? Connect with us: <a href="http://www.twitter.com/representla" target="_blank">@representla</a>
-        </p>
-        <p>
-          If you want to support the LA community by linking to this map from your website,
-          here are some badges you might like to use. You can also grab the <a href="./images/badges/LA-icon.ai">LA icon AI file</a>.
-        </p>
-        <ul class="badges">
-          <li>
-            <img src="./images/badges/badge1.png" alt="">
-          </li>
-          <li>
-            <img src="./images/badges/badge1_small.png" alt="">
-          </li>
-          <li>
-            <img src="./images/badges/badge2.png" alt="">
-          </li>
-          <li>
-            <img src="./images/badges/badge2_small.png" alt="">
-          </li>
-        </ul>
-        <p>
-          This map was built with <a href="https://github.com/abenzer/represent-map">RepresentMap</a> - an open source project we started
-          to help startup communities around the world create their own maps. 
-          Check out some <a target="_blank" href="http://www.representmap.com">startup maps</a> built by other communities!
-        </p>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal" style="float: right;">Close</a>
-      </div>
     </div>
     
     

@@ -1,6 +1,6 @@
 <?php
 
-// mysql hostname
+// postgres hostname
 $db_host = "";
 
 // database name

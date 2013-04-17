@@ -6,7 +6,7 @@ include "header.php";
 // hide marker on map
 if($task == "hide") {
   $place_id = htmlspecialchars($_GET['place_id']);
-  mysql_query("UPDATE places SET approved=0 WHERE id='$place_id'") or die(mysql_error());
+  pg_query($conn, "UPDATE places SET approved='FALSE' WHERE id='$place_id'") or die(pg_error());
   header("Location: index.php?view=$view&search=$search&p=$p");
   exit;
 }
@@ -14,7 +14,7 @@ if($task == "hide") {
 // show marker on map
 if($task == "approve") {
   $place_id = htmlspecialchars($_GET['place_id']);
-  mysql_query("UPDATE places SET approved=1 WHERE id='$place_id'") or die(mysql_error());
+  pg_query($conn, "UPDATE places SET approved='TRUE' WHERE id='$place_id'") or die(pg_error());
   header("Location: index.php?view=$view&search=$search&p=$p");
   exit;
 }
@@ -22,7 +22,7 @@ if($task == "approve") {
 // completely delete marker from map
 if($task == "delete") {
   $place_id = htmlspecialchars($_GET['place_id']);
-  mysql_query("DELETE FROM places WHERE id='$place_id'") or die(mysql_error());
+  pg_query($conn, "DELETE FROM places WHERE id='$place_id'") or die(pg_error());
   header("Location: index.php?view=$view&search=$search&p=$p");
   exit;
 }
@@ -34,24 +34,26 @@ $page_end = $page_start + $items_per_page;
 
 // get results
 if($view == "approved") {
-  $places = mysql_query("SELECT * FROM places WHERE approved='1' ORDER BY title LIMIT $page_start, $items_per_page");
+  $places = pg_query($conn, "SELECT * FROM places WHERE approved ORDER BY title OFFSET $page_start LIMIT $items_per_page");
   $total = $total_approved;
 } else if($view == "rejected") {
-  $places = mysql_query("SELECT * FROM places WHERE approved='0' ORDER BY title LIMIT $page_start, $items_per_page");
+  $places = pg_query($conn, "SELECT * FROM places WHERE approved = FALSE ORDER BY title OFFSET $page_start LIMIT $items_per_page");
   $total = $total_rejected;
 } else if($view == "pending") {
-  $places = mysql_query("SELECT * FROM places WHERE approved IS null ORDER BY id DESC LIMIT $page_start, $items_per_page");
+  $places = pg_query($conn, "SELECT * FROM places WHERE approved = NULL ORDER BY id DESC OFFSET $page_start LIMIT $items_per_page");
   $total = $total_pending;
 } else if($view == "") {
-  $places = mysql_query("SELECT * FROM places ORDER BY title LIMIT $page_start, $items_per_page");
+  $places = pg_query($conn, "SELECT * FROM places ORDER BY title OFFSET $page_start LIMIT $items_per_page");
   $total = $total_all;
 }
 if($search != "") {
-  $places = mysql_query("SELECT * FROM places WHERE title LIKE '%$search%' ORDER BY title LIMIT $page_start, $items_per_page");
-  $total = mysql_num_rows(mysql_query("SELECT id FROM places WHERE title LIKE '%$search%'")); 
+  $places = pg_query($conn, "SELECT * FROM places WHERE title LIKE '%$search%' ORDER BY title OFFSET $page_start LIMIT $items_per_page");
+  $total = pg_num_rows(pg_query($conn, "SELECT id FROM places WHERE title LIKE '%$search%'")); 
 }
 
 echo $admin_head;
+
+echo pg_last_error();
 ?>
 
 
@@ -66,7 +68,7 @@ echo $admin_head;
   </h3>
   <ul>
     <?
-      while($place = mysql_fetch_assoc($places)) {
+      while($place = pg_fetch_assoc($places)) {
         $place[uri] = str_replace("http://", "", $place[uri]);
         $place[uri] = str_replace("https://", "", $place[uri]);
         $place[uri] = str_replace("www.", "", $place[uri]);

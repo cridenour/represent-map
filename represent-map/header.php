@@ -2,8 +2,19 @@
 include "./include/db.php";
 
 // connect to db
-mysql_connect($db_host, $db_user, $db_pass) or die(mysql_error());
-mysql_select_db($db_name) or die(mysql_error());
+$connection_string = "host=$db_host";
+if($db_name) {
+  $connection_string .= " dbname=$db_name";
+}
+if($db_user) {
+  $connection_string .= " user=$db_user";
+}
+if($db_pass) {
+  $connection_string .= " pass=$db_pass";
+}
+
+$conn = pg_connect($connection_string);
+if(!$conn) { die(pg_last_error()); }
 
 // if map is in Startup Genome mode, check for new data
 if($sg_enabled) {
@@ -13,10 +24,7 @@ if($sg_enabled) {
 
 // input parsing
 function parseInput($value) {
-  $value = htmlspecialchars($value, ENT_QUOTES);
-  $value = str_replace("\r", "", $value);
-  $value = str_replace("\n", "", $value);
-  return $value;
+  return pg_escape_string($value);
 }
 
 

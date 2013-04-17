@@ -28,14 +28,25 @@ if($page != "login") {
 }
 
 // connect to db
-mysql_connect($db_host, $db_user, $db_pass) or die(mysql_error());
-mysql_select_db($db_name) or die(mysql_error());
+$connection_string = "host=$db_host";
+if($db_name) {
+  $connection_string .= " dbname=$db_name";
+}
+if($db_user) {
+  $connection_string .= " user=$db_user";
+}
+if($db_pass) {
+  $connection_string .= " pass=$db_pass";
+}
+
+$conn = pg_connect($connection_string);
+if(!$conn) { die(pg_last_error()); }
 
 // get marker totals
-$total_approved = mysql_num_rows(mysql_query("SELECT id FROM places WHERE approved='1'"));
-$total_rejected = mysql_num_rows(mysql_query("SELECT id FROM places WHERE approved='0'"));
-$total_pending = mysql_num_rows(mysql_query("SELECT id FROM places WHERE approved IS null"));
-$total_all = mysql_num_rows(mysql_query("SELECT id FROM places"));
+$total_approved = pg_num_rows(pg_query($conn, "SELECT id FROM places WHERE approved='1'"));
+$total_rejected = pg_num_rows(pg_query($conn, "SELECT id FROM places WHERE approved='0'"));
+$total_pending = pg_num_rows(pg_query($conn, "SELECT id FROM places WHERE approved IS null"));
+$total_all = pg_num_rows(pg_query($conn, "SELECT id FROM places"));
 
 // admin header
 $admin_head = "
