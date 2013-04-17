@@ -14,7 +14,7 @@ include_once "header.php";
     Create a map for your startup community!
     https://github.com/abenzer/represent-map
     -->
-    <title>represent.la - map of the Los Angeles startup community</title>
+    <title>Startup Cincy - Map of Cincinnati Startups</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <link href='http://fonts.googleapis.com/css?family=Open+Sans+Condensed:700|Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -368,9 +368,6 @@ include_once "header.php";
     <? echo $head_html; ?>
   </head>
   <body>
-    
-    <!-- display error overlay if something went wrong -->
-    <?php echo $error; ?>
     
     <!-- facebook like button code -->
     <div id="fb-root"></div>
