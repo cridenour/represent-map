@@ -180,33 +180,33 @@ include_once "header.php";
             $places = pg_query($conn, "SELECT * FROM places WHERE approved AND type='$type[0]' ORDER BY title");
             $places_total = pg_num_rows($places);
             while($place = pg_fetch_assoc($places)) {
-              $place[title] = htmlspecialchars_decode(addslashes(htmlspecialchars($place[title])));
-              $place[description] = json_encode($place[description]);
-              $place[uri] = addslashes(htmlspecialchars($place[uri]));
-              $place[address] = htmlspecialchars_decode(addslashes(htmlspecialchars($place[address])));
+              $place['title'] = htmlspecialchars_decode(addslashes(htmlspecialchars($place['title'])));
+              $place['description'] = json_encode($place['description']);
+              $place['uri'] = addslashes(htmlspecialchars($place['uri']));
+              $place['address'] = htmlspecialchars_decode(addslashes(htmlspecialchars($place['address'])));
               echo "
-                markers.push(['".$place[title]."', '".$place[type]."', '".$place[lat]."', '".$place[lng]."', '".$place[description]."', '".$place[uri]."', '".$place[address]."']); 
-                markerTitles[".$marker_id."] = '".$place[title]."';
+                markers.push(['".$place['title']."', '".$place['type']."', '".$place['lat']."', '".$place['lng']."', '".$place['description']."', '".$place['uri']."', '".$place['address']."']); 
+                markerTitles[".$marker_id."] = '".$place['title']."';
               "; 
-              $count[$place[type]]++;
+              $count[$place['type']]++;
               $marker_id++;
             }
           } 
           if($show_events == true) {
-            $place[type] = "event";
+            $place['type'] = "event";
             $events = pg_query($conn, "SELECT * FROM events WHERE start_date > ".time()." AND start_date < ".(time()+4838400)." ORDER BY id DESC");
             $events_total = pg_num_rows($events);
             while($event = pg_fetch_assoc($events)) {
-              $event[title] = htmlspecialchars_decode(addslashes(htmlspecialchars($event[title])));
-              $event[description] = htmlspecialchars_decode(addslashes(htmlspecialchars($event[description])));
-              $event[uri] = addslashes(htmlspecialchars($event[uri]));
-              $event[address] = htmlspecialchars_decode(addslashes(htmlspecialchars($event[address])));
-              $event[start_date] = date("D, M j @ g:ia", $event[start_date]);
+              $event['title'] = htmlspecialchars_decode(addslashes(htmlspecialchars($event['title'])));
+              $event['description'] = htmlspecialchars_decode(addslashes(htmlspecialchars($event['description'])));
+              $event['uri'] = addslashes(htmlspecialchars($event['uri']));
+              $event['address'] = htmlspecialchars_decode(addslashes(htmlspecialchars($event['address'])));
+              $event['start_date'] = date("D, M j @ g:ia", $event['start_date']);
               echo "
-                markers.push(['".$event[title]."', 'event', '".$event[lat]."', '".$event[lng]."', '".$event[start_date]."', '".$event[uri]."', '".$event[address]."']); 
-                markerTitles[".$marker_id."] = '".$event[title]."';
+                markers.push(['".$event['title']."', 'event', '".$event['lat']."', '".$event['lng']."', '".$event['start_date']."', '".$event['uri']."', '".$event['address']."']); 
+                markerTitles[".$marker_id."] = '".$event['title']."';
               "; 
-              $count[$place[type]]++;
+              $count[$place['type']]++;
               $marker_id++;
             }
           }
