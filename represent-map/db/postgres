@@ -1,0 +1,195 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 9.1.4
+-- Dumped by pg_dump version 9.2.2
+-- Started on 2013-04-17 00:43:50 EDT
+
+SET statement_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SET check_function_bodies = false;
+SET client_min_messages = warning;
+
+--
+-- TOC entry 166 (class 3079 OID 11907)
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- TOC entry 2139 (class 0 OID 0)
+-- Dependencies: 166
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
+SET search_path = public, pg_catalog;
+
+SET default_tablespace = '';
+
+SET default_with_oids = false;
+
+--
+-- TOC entry 161 (class 1259 OID 106555)
+-- Name: events; Type: TABLE; Schema: public; Owner: chrisridenour; Tablespace: 
+--
+
+CREATE TABLE events (
+    id_eventbrite character varying(15) NOT NULL,
+    title character varying(200) NOT NULL,
+    created bigint NOT NULL,
+    organizer_name character varying(100) NOT NULL,
+    uri character varying(200) NOT NULL,
+    start_date bigint NOT NULL,
+    end_date bigint NOT NULL,
+    lat real NOT NULL,
+    lng real NOT NULL,
+    address character varying(200) NOT NULL,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.events OWNER TO chrisridenour;
+
+--
+-- TOC entry 165 (class 1259 OID 106594)
+-- Name: events_id_seq; Type: SEQUENCE; Schema: public; Owner: chrisridenour
+--
+
+CREATE SEQUENCE events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.events_id_seq OWNER TO chrisridenour;
+
+--
+-- TOC entry 2140 (class 0 OID 0)
+-- Dependencies: 165
+-- Name: events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chrisridenour
+--
+
+ALTER SEQUENCE events_id_seq OWNED BY events.id;
+
+
+--
+-- TOC entry 163 (class 1259 OID 106574)
+-- Name: places; Type: TABLE; Schema: public; Owner: chrisridenour; Tablespace: 
+--
+
+CREATE TABLE places (
+    approved boolean,
+    title character varying(100) NOT NULL,
+    type character varying(20) NOT NULL,
+    lat real NOT NULL,
+    lng real NOT NULL,
+    address character varying(200) NOT NULL,
+    uri character varying(200) NOT NULL,
+    description text,
+    sector character varying(50),
+    owner_name character varying(100),
+    owner_email character varying(100),
+    sg_organization_id integer NOT NULL,
+    id integer NOT NULL
+);
+
+
+ALTER TABLE public.places OWNER TO chrisridenour;
+
+--
+-- TOC entry 164 (class 1259 OID 106582)
+-- Name: places_id_seq; Type: SEQUENCE; Schema: public; Owner: chrisridenour
+--
+
+CREATE SEQUENCE places_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.places_id_seq OWNER TO chrisridenour;
+
+--
+-- TOC entry 2141 (class 0 OID 0)
+-- Dependencies: 164
+-- Name: places_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: chrisridenour
+--
+
+ALTER SEQUENCE places_id_seq OWNED BY places.id;
+
+
+--
+-- TOC entry 162 (class 1259 OID 106571)
+-- Name: settings; Type: TABLE; Schema: public; Owner: chrisridenour; Tablespace: 
+--
+
+CREATE TABLE settings (
+    sg_lastupdate bigint NOT NULL
+);
+
+
+ALTER TABLE public.settings OWNER TO chrisridenour;
+
+--
+-- TOC entry 2126 (class 2604 OID 106596)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: chrisridenour
+--
+
+ALTER TABLE ONLY events ALTER COLUMN id SET DEFAULT nextval('events_id_seq'::regclass);
+
+
+--
+-- TOC entry 2127 (class 2604 OID 106584)
+-- Name: id; Type: DEFAULT; Schema: public; Owner: chrisridenour
+--
+
+ALTER TABLE ONLY places ALTER COLUMN id SET DEFAULT nextval('places_id_seq'::regclass);
+
+
+--
+-- TOC entry 2129 (class 2606 OID 106598)
+-- Name: events_pkey; Type: CONSTRAINT; Schema: public; Owner: chrisridenour; Tablespace: 
+--
+
+ALTER TABLE ONLY events
+    ADD CONSTRAINT events_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2131 (class 2606 OID 106586)
+-- Name: places_pkey; Type: CONSTRAINT; Schema: public; Owner: chrisridenour; Tablespace: 
+--
+
+ALTER TABLE ONLY places
+    ADD CONSTRAINT places_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 2138 (class 0 OID 0)
+-- Dependencies: 5
+-- Name: public; Type: ACL; Schema: -; Owner: chrisridenour
+--
+
+REVOKE ALL ON SCHEMA public FROM PUBLIC;
+REVOKE ALL ON SCHEMA public FROM chrisridenour;
+GRANT ALL ON SCHEMA public TO chrisridenour;
+GRANT ALL ON SCHEMA public TO PUBLIC;
+
+
+-- Completed on 2013-04-17 00:43:50 EDT
+
+--
+-- PostgreSQL database dump complete
+--
+
